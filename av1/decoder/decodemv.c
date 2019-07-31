@@ -212,6 +212,11 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 
   const MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed(xd->global_motion, xd, mbmi, cm->allow_warped_motion);
+
+  if (mbmi->mode == 15)
+    printf("last_motion_mode_allowed: %d\n", last_motion_mode_allowed);
+
+
   int motion_mode;
 
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
@@ -1399,6 +1404,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (mbmi->ref_frame[1] != INTRA_FRAME)
     mbmi->motion_mode = read_motion_mode(cm, xd, mbmi, r);
 
+  const MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed(xd->global_motion, xd, mbmi, cm->allow_warped_motion);
+
+  if (mbmi->mode == GLOBALMV)
+      printf("%d %d - mode: %d  - motion_mode: %d - last_motion_mode_allowed: %d, mbmi->sb_type: %d, mv: %d %d\n",
+             mi_col, mi_row, mbmi->mode, mbmi->motion_mode, last_motion_mode_allowed,
+             mbmi->sb_type, mbmi->mv->as_mv.col, mbmi->mv->as_mv.row);
+
   // init
   mbmi->comp_group_idx = 0;
   mbmi->compound_idx = 1;
@@ -1457,7 +1470,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   read_mb_interp_filter(cm, xd, mbmi, r);
 
-  if (mbmi->motion_mode == WARPED_CAUSAL) {
+  if (mbmi->motion_mode == WARPED_CAUSAL && mbmi->mode != GLOBALMV) {
     mbmi->wm_params.wmtype = DEFAULT_WMTYPE;
     mbmi->wm_params.invalid = 0;
 

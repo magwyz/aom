@@ -4780,7 +4780,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         aom_malloc(sizeof(*segment_map) * segment_map_w * segment_map_h);
     memset(segment_map, 0,
            sizeof(*segment_map) * segment_map_w * segment_map_h);
-
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
       ref_buf[frame] = NULL;
       RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
@@ -4794,6 +4793,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       for (pframe = ALTREF_FRAME; pframe > frame; --pframe) {
         if (ref_buf[frame] == ref_buf[pframe]) break;
       }
+
       if (pframe > frame) {
         memcpy(&cm->global_motion[frame], &cm->global_motion[pframe],
                sizeof(WarpedMotionParams));
@@ -4802,6 +4802,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                  ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
                  do_gm_search_logic(&cpi->sf, num_refs_using_gm, frame) &&
                  !(cpi->sf.selective_ref_gm && skip_gm_frame(cm, frame))) {
+
         if (num_frm_corners < 0) {
           // compute interest points using FAST features
           num_frm_corners = av1_fast_corner_detect(
@@ -4824,6 +4825,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                 ? GLOBAL_MOTION_DISFLOW_BASED
                 : GLOBAL_MOTION_FEATURE_BASED;
         for (model = ROTZOOM; model < GLOBAL_TRANS_TYPES_ENC; ++model) {
+
           int64_t best_warp_error = INT64_MAX;
           // Initially set all params to identity.
           for (i = 0; i < RANSAC_NUM_MOTIONS; ++i) {
@@ -4890,6 +4892,15 @@ static void encode_frame_internal(AV1_COMP *cpi) {
               cpi->source->y_stride, segment_map, segment_map_w);
 
           if (ref_frame_error == 0) continue;
+
+          int_mv gm = gm_get_motion_vector(
+              &cm->global_motion[frame],
+              0 /* allow_hp */,
+              BLOCK_8X8,
+              0, 0,
+              0 /* is_integer */);
+
+          printf("-> %d %d\n", gm.as_mv.col, gm.as_mv.row);
 
           // If the best error advantage found doesn't meet the threshold for
           // this motion type, revert to IDENTITY.

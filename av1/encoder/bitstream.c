@@ -2657,6 +2657,10 @@ static void write_global_motion_params(const WarpedMotionParams *params,
     const int trans_prec_diff = (type == TRANSLATION)
                                     ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
                                     : GM_TRANS_PREC_DIFF;
+    printf("TRANSLATION: %d %d %d %d\n", (ref_params->wmmat[0] >> trans_prec_diff),
+            (params->wmmat[0] >> trans_prec_diff),
+            (ref_params->wmmat[1] >> trans_prec_diff),
+            (params->wmmat[1] >> trans_prec_diff));
     aom_wb_write_signed_primitive_refsubexpfin(
         wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
         (ref_params->wmmat[0] >> trans_prec_diff),
@@ -2676,6 +2680,23 @@ static void write_global_motion(AV1_COMP *cpi,
     const WarpedMotionParams *ref_params =
         cm->prev_frame ? &cm->prev_frame->global_motion[frame]
                        : &default_warp_params;
+
+    printf("type: %d - %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+           cm->global_motion[frame].wmtype,
+           cm->global_motion[frame].alpha,
+           cm->global_motion[frame].beta ,
+           cm->global_motion[frame].delta,
+           cm->global_motion[frame].gamma,
+           cm->global_motion[frame].invalid,
+           cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1],
+           cm->global_motion[frame].wmmat[2],
+           cm->global_motion[frame].wmmat[3],
+           cm->global_motion[frame].wmmat[4],
+           cm->global_motion[frame].wmmat[5],
+           cm->global_motion[frame].wmmat[6],
+           cm->global_motion[frame].wmmat[7]);
+
     write_global_motion_params(&cm->global_motion[frame], ref_params, wb,
                                cm->allow_high_precision_mv);
     // TODO(sarahparker, debargha): The logic in the commented out code below

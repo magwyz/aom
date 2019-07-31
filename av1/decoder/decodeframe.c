@@ -4415,8 +4415,9 @@ static int read_global_motion_params(WarpedMotionParams *params,
                                      int allow_hp) {
   TransformationType type = aom_rb_read_bit(rb);
   if (type != IDENTITY) {
-    if (aom_rb_read_bit(rb))
+    if (aom_rb_read_bit(rb)) {
       type = ROTZOOM;
+    }
     else
       type = aom_rb_read_bit(rb) ? TRANSLATION : AFFINE;
   }
@@ -4494,6 +4495,22 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #endif
       cm->global_motion[frame].invalid = 1;
     }
+
+    printf("type: %d - %d %d %d %d %d %d %d %d %d %d %d %d %d\n",
+           cm->global_motion[frame].wmtype,
+           cm->global_motion[frame].alpha,
+           cm->global_motion[frame].beta ,
+           cm->global_motion[frame].delta,
+           cm->global_motion[frame].gamma,
+           cm->global_motion[frame].invalid,
+           cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1],
+           cm->global_motion[frame].wmmat[2],
+           cm->global_motion[frame].wmmat[3],
+           cm->global_motion[frame].wmmat[4],
+           cm->global_motion[frame].wmmat[5],
+           cm->global_motion[frame].wmmat[6],
+           cm->global_motion[frame].wmmat[7]);
 
     // TODO(sarahparker, debargha): The logic in the commented out code below
     // does not work currently and causes mismatches when resize is on. Fix it
